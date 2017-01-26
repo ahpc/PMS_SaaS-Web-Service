@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PMS Client Service</title>
+<link href="public/bootstrap.css" type="text/css" rel="stylesheet" media="all">
+<link href="public/style.css" type="text/css" rel="stylesheet" media="all">
+<link href="public/jquery-ui.css" type="text/css" rel="stylesheet" media="all">
+<!-- Custom Theme files -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Doctor Plus Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template, 
+	Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
+<!-- //Custom Theme files -->
+<!-- js -->
+<script src="public/jquery-1.12.4.js"></script>
+<script src="public/jquery-ui.js"></script>
+<script>
+var sid = null;
+var sname = null;
+$( function() {
+	$("#changeDate").hide();
+	$("#datePicker").hide();
+	getDateList();
+} );
+function show_appointment_info() {
+	if (document.getElementById('info_id').value != "" && document.getElementById('info_name').value != "") {
+		loadDoc();
+	} else {
+		alert("Please input complete information!");
+	}
+}
+function loadDoc() {
+	var xhttp = new XMLHttpRequest();
+	var id = document.getElementById('info_id').value;
+	var name = document.getElementById('info_name').value;
+	xhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var obj = jQuery.parseJSON(this.responseText);
+			document.getElementById("patient_name").innerHTML = obj.name;
+			document.getElementById("appointmnet_date").innerHTML = obj.appointment + ", " + obj.time;
+			document.getElementById("doctor_contacts").innerHTML = "Email:&nbsp;" + obj.email + "<br>Tel:&nbsp;" + obj.telephone;
+			document.getElementById("appendix2").innerHTML = "(If you need to change the appointment date, please click Change Date.)";
+			document.getElementById("appendix3").innerHTML = "(For any question, please contact the doctor.)";
+			if (obj.time != '!') {
+				$("#changeDate").show();
+				sid = id;
+				sname = name;
+			}
+		}
+	};
+	xhttp.open("POST", "https://localhost:7000/api/patient", true);
+	xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhttp.send("id=" + id + "&name=" + name);
+}
+function getDateList() {
+	var dhttp = new XMLHttpRequest();
+	dhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+			var array = this.responseText;
+			function blockDates(date){
+				var string = jQuery.datepicker.formatDate("yy/mm/dd", date);
+				if (array.indexOf(string) != -1) {
+					return [false];
+				}
+				var d = $.datepicker.noWeekends(date)
+				return d;
+			}
+			$( "#datepicker" ).datepicker({
+				dateFormat: "yy/mm/dd",
+				minDate: new Date(2016, 10 - 1, 1),
+				maxDate: "+4Y",
+				beforeShowDay: blockDates
+			});
+		}
+	};
+	dhttp.open("POST", "https://localhost:7000/api/list", true);
+	dhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	dhttp.send("password");
+}
+function submitDateTime() {
+	if (document.getElementById('datepicker').value != "" && document.getElementById('timepicker').value != "") {
+		var shttp = new XMLHttpRequest();
+		var sdate = document.getElementById('datepicker').value;
+		var stime = document.getElementById('timepicker').value;
+		shttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+				var obj = jQuery.parseJSON(this.responseText);
+				document.getElementById("appointmnet_date").innerHTML = obj.appointment + ", " + obj.time;
+				alert("Appointment date change succeeded!");
+				$( "#datepicker" ).datepicker( "destroy" );
+				getDateList();
+				$( "#datepicker" ).val("");
+				$("#datePicker").hide();
+			}
+		};
+		shttp.open("POST", "https://localhost:7000/api/submitdatetime", true);
+		shttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		shttp.send("id=" + sid + "&name=" + sname + "&date=" + sdate + "&time=" + stime);
+	} else {
+		alert("Please complete date information!");
+	}
+}
+function show_datepicker() {
+	$("#datePicker").show();
+}
+function hide_datepicker() {
+	$("#datePicker").hide();
+}
+</script>
+<!-- //js -->
+</head>
+<body>
+	<!--header-->
+	<div class="header">
+		<div class="container">
+			<div class="header-logo">
+				<a href="index.html"><img src="public/logo2.png" alt="logo"/></a>					
+			</div>
+			<div class="header-info">
+				<p>Information Service:</p>
+				<h4>Patient Service</h4>
+			</div>			
+			<div class="clearfix"> </div>
+		</div>	
+	</div>
+	<!--//header-->
+	<!--header-bottom-->
+	<div class="header-bottom">
+		<div class="container">
+			<!--top-nav-->
+			<div class="top-nav cl-effect-5">
+			<h2>Input your Appointment ID and name:&nbsp;&nbsp;</h2>
+			</div>
+			<div class="top-nav cl-effect-5">
+			<form class="navbar-form navbar-right">
+					<input id="info_id" type="text" class="form-control" placeholder="ID" style="width: 270px;">&nbsp;
+					<input id="info_name" type="text" class="form-control" placeholder="Firstname Lastname" style="width: 270px;">
+				</form>
+			</div>
+			<!--//top-nav-->
+			<div class="form-group">
+				<input id="btnsubmit" type="submit" style="display:inline;float:right;width: 80px;" class="btn btn-default" onclick="show_appointment_info()" value="Submit">
+			</div>
+			 
+				
+		</div>
+		
+	</div>
+	<!--//header-bottom-->
+	<!--work-->
+	<div class="work" style="height: 600px;">		
+		<div class="container">	
+			<div class="work-title">
+				<h3>Appointment Information</h3>
+				<p id="appendix4"></p>
+			</div>
+			<div class="col-md-4 work-grids">
+				<ul>
+					<li><img src="public/icon2.png" alt=""></li>
+					<li>
+						<h4>Patient</h4>
+						<br/>
+						<h5 id="patient_name"></h5>
+						<p id="appendix1"></p>
+					</li>
+				</ul>
+			</div>	
+			<div class="col-md-4 work-grids">
+				<ul>
+					<li><img src="public/icon3.png" alt=""></li>
+					<li>
+						<h4>Appointment Date</h4>
+						<br/>
+						<h5 id="appointmnet_date"></h5>
+						<p id="appendix2"></p>
+						<br/>
+						<button id="changeDate" onclick="show_datepicker()">Change Date</button>
+						<br/>
+						<div id="datePicker">
+							<br/>
+							<input id="datepicker" readonly>
+							<select id="timepicker">
+								<option value="10:00">10:00</option>
+								<option value="14:00">14:00</option>
+							</select>
+							<br/><br/>
+							<button id="dateSubmit" onclick="submitDateTime()">Submit</button>
+							<button id="datepickerHide" onclick="hide_datepicker()">Close</button>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-4 work-grids">
+				<ul>
+					<li><img src="public/icon4.png" alt=""></li>
+					<li>
+						<h4>Contacts</h4>
+						<br/>
+						<h5 id="doctor_contacts"></h5>
+						<p id="appendix3"></p>
+					</li>
+				</ul>
+			</div>
+			<div class="clearfix"> </div>
+		</div>
+	</div>
+	<!--//work-->
+   
+	<div class="footer-bottom">
+		<div class="container">
+			<p>Copyright &copy; 2016.Company name All rights reserved. <a href="https://vsr.informatik.tu-chemnitz.de/about/people/haipengchen" target="_blank" title="Haiping Chen.">Haiping Chen</a> . <a href="https://vsr.informatik.tu-chemnitz.de/" title="VSR" target="_blank">VSR</a> . <a href="https://www.tu-chemnitz.de/" title="TU Chemnitz" target="_blank">TU Chemnitz</a></p>
+		</div>
+	</div>
+</body>
+</html>
